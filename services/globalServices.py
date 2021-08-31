@@ -9,6 +9,10 @@ from cryptography.hazmat.backends import default_backend
 from random import seed, randint
 import Pyro5.api
 import Pyro5.core
+import json
+from models.ride import Ride
+from models.user import User
+from models.interest import Interest
 
 def getPubKeyFromPem(pem):
     pem_data = base64.b64decode(pem["data"])
@@ -20,14 +24,22 @@ def getSpecificRides(registered_rides, origin, destination, date):
     if(len(registered_rides) > 0):
         for ride in registered_rides:
             if(ride.origin == origin and ride.destination == destination and ride.date == date):
-                found_rides.append(ride)
+                ride_dict = {
+                    'userName': ride.user.name,
+                    'userPhone': ride.user.phone,
+                    'userUri': ride.user.uri,
+                    'origin': ride.origin,
+                    'destination': ride.destination,
+                    'date': ride.date,
+                }
+                found_rides.append(ride_dict)
     
     return found_rides
 
 def getFirstSpecificInterest(registered_interests, origin, destination, date):
     for interest in registered_interests:
         if(interest.origin == origin and interest.destination == destination and interest.date == date):
-            return interest.userUri
+            return interest.user.uri
     return None
 
 def generateKeys():

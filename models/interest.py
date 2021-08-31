@@ -1,7 +1,7 @@
 class Interest:
-    def __init__(self, id, userUri, origin, destination, date):
+    def __init__(self, id, user, origin, destination, date):
         self.id = id
-        self.userUri = userUri
+        self.user = user
         self.origin = origin
         self.destination = destination
         self.date = date

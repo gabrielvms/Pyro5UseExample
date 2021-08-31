@@ -49,16 +49,15 @@ class ClientService(object):
         interest_id = self.rideService.registerInterest(self.uri if notify else None, origin, destination, date, signature)
         self.interests.append(Interest(interest_id, self.uri, origin, destination, date))
 
-        # rides = self.rideService.listRides(origin, destination, date)
+        rides = self.rideService.listRides(origin, destination, date)
 
-        # if(len(rides) > 0):
-        #     print('\nThe following rides were found:\n')
-        #     for ride in rides:
-        #         rideUser = gs.getUserObject(ride.userUri)
-        #         print('From: {0} || To: {1} || Date: {2} ({3} : {4})'
-        #                 .format(ride.origin, ride.destination, ride.date, rideUser.name,rideUser.phone))
-        # else:
-        #     print("\nNo rides from {0} to {1} were found on this date.\n".format(origin, destination))
+        if(len(rides) > 0):
+            print('\nThe following rides were found:\n')
+            for ride in rides:
+                print('From: {0} || To: {1} || Date: {2} ({3} : {4})'
+                        .format(ride['origin'], ride['destination'], ride['date'], ride['userName'], ride['userPhone']))
+        else:
+            print("\nNo rides from {0} to {1} were found on this date.\n".format(origin, destination))
         self.exec_return()
 
     def exec_register_ride(self):
@@ -75,7 +74,7 @@ class ClientService(object):
         signature = gs.setSignature(self.keys['private'], interestData)
 
         ride_id = self.rideService.registerRide(self.uri if notify else None, origin, destination, passengers, date, signature)
-        self.rides.append([ride_id, origin, destination, passengers, date])
+        self.rides.append(Ride(ride_id, self.uri, origin, destination, date, passengers))
         print('\nYour trip was registered.')
         self.exec_return()
 
@@ -83,13 +82,14 @@ class ClientService(object):
         
         if(len(self.interests) > 0):
             print('Your ride interests:\n')
-            idx = 0
             for interest in self.interests:
-                print('{0} - Id: {1} || From: {2} || To: {3} || Date: {4}'.format(idx, interest[0], interest[1], interest[2], interest[3]))
-                idx = idx + 1
-            interest_idx = int(input('\nType the interest number that you want to cancel: '))
-            if(self.ride_service.cancel_interest(self.interests[interest_idx][0])):
-                self.interests.pop(interest_idx)
+                print('Id: {0} || From: {1} || To: {2} || Date: {3}'.format(interest.id, interest.origin, interest.destination, interest.date))
+
+            interestId = int(input('\nEnter the interest id that you want to cancel: '))
+            if(self.rideService.cancelInterest(interestId)):
+                for interest in self.interests:
+                    if interest.id == interestId:
+                        self.interests.remove(interest)
         else:
             print("You don't have any ride interests.")
         self.exec_return()
@@ -98,13 +98,14 @@ class ClientService(object):
         
         if(len(self.rides) > 0):
             print('Your rides:\n')
-            idx = 0
             for ride in self.rides:
-                print('{0} - Id: {1} || From: {1} || To: {2} || Passengers: {3} || Date: {4}'.format(idx, ride[0], ride[1], ride[2], ride[3], ride[4]))
-                idx = idx + 1
-            ride_idx = int(input('\nType the ride number that you want to cancel: '))
-            if(self.ride_service.cancel_ride(self.rides[ride_idx][0])):
-                self.rides.pop(ride_idx)
+                print('Id: {0} || From: {1} || To: {2} || Passengers: {3} || Date: {4}'.format(ride.id, ride.origin, ride.destination, ride.seats, ride.date))
+                
+            rideId = int(input('\nEnter the Id of the ride that you want to cancel: '))
+            if(self.rideService.cancelRide(rideId)):
+                for ride in self.rides:
+                    if ride.id == rideId:
+                        self.rides.remove(ride)
         else:
             print("You don't have any rides scheduled.")
         self.exec_return()

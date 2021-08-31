@@ -29,12 +29,16 @@ class RideService(object):
     
     def listRides(self, origin, destination, date):
         found_rides = gs.getSpecificRides(registered_rides, origin, destination, date)
-        
+
         for ride in found_rides:
-            if(ride.userUri != None):
-                rideUser = gs.getUserObject(ride.userUri) #client dono da corrida
-                rideUser.notify_passenger_interested(self.user.name, self.user.phone, ride.origin, ride.destination, ride.date) #dono da corrida recebe a notificacao de interesse
+            if(ride['userUri'] != None):
+                rideUserClient = gs.getUserObject(ride['userUri']) #client dono da corrida
+                rideUserClient.notify_passenger_interested(self.user.name, self.user.phone, #dono da corrida recebe a notificacao de interesse
+                                                     ride['origin'], ride['destination'], ride['date']) 
+        
         return found_rides
+
+
 
     def registerInterest(self, uri, origin, destination, date, encSignature):
         signature = gs.getSignature(encSignature)
@@ -42,10 +46,11 @@ class RideService(object):
         isSignatureValid = gs.verifySignature(self.user.publicKey, signature, interestData)
 
         if(isSignatureValid):
+            self.user.uri = uri
             global interestId
             id = interestId
             interestId += 1
-            registered_interests.append(Interest(id, uri, origin, destination, date))
+            registered_interests.append(Interest(id, self.user, origin, destination, date))
             print('The interest {0} was successfully registered.'.format(id))
             return id
         else:
@@ -57,10 +62,11 @@ class RideService(object):
         isSignatureValid = gs.verifySignature(self.user.publicKey, signature, interestData)
         
         if(isSignatureValid):
+            self.user.uri = uri
             global rideId
             id = rideId
             rideId += 1
-            registered_rides.append(Ride(id, uri, origin, destination, date, passengers))
+            registered_rides.append(Ride(id, self.user, origin, destination, date, passengers))
             
             remoteUserUri = gs.getFirstSpecificInterest(registered_interests, origin, destination, date)
             if(remoteUserUri != None):
@@ -70,3 +76,20 @@ class RideService(object):
             return id
         else:
             print("The signature is Invalid!")
+
+    def cancelInterest(self, interestId):
+        for interest in registered_interests:
+            if interest.id == interestId:
+                registered_interests.remove(interest)
+                print('The interest {0} was successfully cancelled.'.format(interestId))
+                return True
+        return False
+
+    def cancelRide(self, rideId):
+        for ride in registered_rides:
+            if ride.id == rideId:
+                registered_rides.remove(ride)
+                print('The ride {0} was successfully cancelled.'.format(rideId))
+                return True
+        return False
+            

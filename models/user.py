@@ -1,6 +1,6 @@
 class User:
-    def __init__(self, name, phone, publicKey):
+    def __init__(self, name, phone, publicKey, uri=''):
         self.name = name
         self.phone = phone
         self.publicKey = publicKey
-        self.uri = ''
+        self.uri = uri

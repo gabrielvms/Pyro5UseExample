@@ -47,6 +47,7 @@ class ClientService(object):
         signature = gs.setSignature(self.keys['private'], interestData)
         
         interest_id = self.rideService.registerInterest(self.uri if notify else None, origin, destination, date, signature)
+        
         self.interests.append(Interest(interest_id, self.uri, origin, destination, date))
 
         rides = self.rideService.listRides(origin, destination, date)
@@ -126,9 +127,9 @@ class ClientService(object):
         
         self.keys = gs.generateKeys()
         
-        pem = gs.generatePem(self.keys['public'])
+        publicPem = gs.generatePem(self.keys['public'])
 
-        if(not self.rideService.registerUser(self.name, self.phone, pem)):
+        if(not self.rideService.registerUser(self.name, self.phone, publicPem)):
             print("\nThe informed phone is already in use. Exiting...\n")
         else:
             option = 0

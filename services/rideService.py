@@ -14,9 +14,9 @@ interestId = 1000
 
 @Pyro5.api.expose
 class RideService(object):
-    def registerUser(self, name, phone, pem):
+    def registerUser(self, name, phone, publicPem):
 
-        publicKey = gs.getPubKeyFromPem(pem)
+        publicKey = gs.getPubKeyFromPem(publicPem)
 
         self.user = User(name, phone, publicKey)
         if(any(x.phone == phone for x in registered_users)):
@@ -28,15 +28,15 @@ class RideService(object):
             return True
     
     def listRides(self, origin, destination, date):
-        found_rides = gs.getSpecificRides(registered_rides, origin, destination, date)
+        rides_found = gs.getSpecificRides(registered_rides, origin, destination, date)
 
-        for ride in found_rides:
+        for ride in rides_found:
             if(ride['userUri'] != None):
                 rideUserClient = gs.getUserObject(ride['userUri']) #client dono da corrida
                 rideUserClient.notify_passenger_interested(self.user.name, self.user.phone, #dono da corrida recebe a notificacao de interesse
                                                      ride['origin'], ride['destination'], ride['date']) 
         
-        return found_rides
+        return rides_found
 
 
 
